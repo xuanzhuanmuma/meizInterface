@@ -21,6 +21,7 @@ import requests
 from util.handle_excel import excel_data
 from base.base_request import request
 from util.handle_ini import HandleIni
+from util.handle_json import HandleJson
 base_url = HandleIni().get_value('server', 'host')
 
 
@@ -42,8 +43,22 @@ class RunMain(object):
                     json_data = request.get_json_(res)
                     print(json_data['code'])
                 else:
-                    print('接口错误')
+                    print('服务器有误')
 
+    def get_json_values(self):
+        data = HandleJson().read_json('user_data.json')
+        return data
+
+    def get_json_value(self, url):
+        data = HandleJson().get_value(url, 'user_data.json')
+        return data
+
+    def get_message_with_code(self, url, code):
+        data = self.get_json_value(url)
+        for i in data:
+            message = i.get(code)
+            # TODO
 
 if __name__ == '__main__':
-    RunMain().run_case()
+    # RunMain().run_case()
+    print(RunMain().get_message_with_code('api3/getbannerImage', ))

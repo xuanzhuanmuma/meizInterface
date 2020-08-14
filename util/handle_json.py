@@ -6,13 +6,19 @@
 @time: 2020/8/14 16:46
 """
 import json
+import os
 
 class HandleJson(object):
-    def read_json(self, file_path):
-        with open(file_path) as file:
+    def read_json(self, file_name=None):
+        base_path = os.path.dirname(os.getcwd())
+        if file_name is None:
+            file_path = base_path + r'\config\user_data.json'
+        else:
+            file_path = base_path + '\\config\\' + file_name
+        with open(file_path, encoding='utf-8') as file:
             data = json.load(file)
         return data
 
-    def get_value(self, key):
-        data = self.read_json()
+    def get_value(self, key, file_name=None):
+        data = self.read_json(file_name)
         return data[key]
