@@ -1,0 +1,8 @@
+{
+  "app_cookie": {
+     "appid": "aaaa"
+  },
+  "web": {
+    "cookie": "bbbbb"
+  }
+}

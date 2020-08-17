@@ -21,4 +21,18 @@ class HandleJson(object):
 
     def get_value(self, key, file_name=None):
         data = self.read_json(file_name)
-        return data[key]
+        return data.get(key)
+
+    def write_value(self, file_name, data):
+        base_path = os.path.dirname(os.getcwd())
+        file_path = base_path + '\\config\\' + file_name
+        with open(file_path, 'w') as file:
+            file.write(json.dumps(data))
+
+if __name__ == '__main__':
+    data = {
+        "app": {
+            "ada": "adafds"
+        }
+    }
+    HandleJson().write_value('cookie.json', data)

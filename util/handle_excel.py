@@ -52,6 +52,13 @@ class HandleExcel(object):
             row_list.append(i.value)
         return row_list
 
+    def excel_write_data(self, row, col, value):
+        '''写入数据'''
+        wb = self.load_excel()
+        wr = wb.active
+        wr.cell(row, col, value)
+        wb.save(get_file_path())
+
 '''单例'''
 excel_data = HandleExcel()
 
