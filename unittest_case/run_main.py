@@ -26,6 +26,7 @@ from util.handle_ini import HandleIni
 from util.handle_json import HandleJson
 from util.handle_cookie import HandleCookie
 from util.handler_header import HandleHeader
+from util.condition_data import ConditionData
 base_url = HandleIni().get_value('server', 'host')
 
 
@@ -37,13 +38,18 @@ class RunMain(object):
             get_cookie = None
             headers = None
             # openpyxl行和类分别从1开始
-            data = excel_data.get_row_value(i + 2)
+            data = excel_data.get_row_values(i + 2)
             is_run = data[2]
             if is_run == 'yes':
                 cookie_method = data[7]  # cookie操作
                 is_header = data[8]  # header操作
                 except_type = data[9]  # 预期结果方式
                 except_result = data[10]  # 预期结果
+                condition = data[3]  # 前置条件
+                if condition is not None:
+                    condition_data = ConditionData().depend_data(condition, len(data))
+                    print(len(data))
+                    print(condition_data)
                 if cookie_method == 'yes':
                     cookie = HandleCookie().get_cookie_value('app')
                 if is_header:
