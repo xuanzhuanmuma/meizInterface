@@ -16,18 +16,18 @@ class HandleJson(object):
         else:
             file_path = base_path + '\\config\\' + file_name
         with open(file_path, encoding='utf-8') as file:
-            data = json.load(file)
-        return data
+            file_data = json.load(file)
+        return file_data
 
     def get_value(self, key, file_name=None):
-        data = self.read_json(file_name)
-        return data.get(key)
+        file_data = self.read_json(file_name)
+        return file_data.get(key)
 
-    def write_value(self, file_name, data):
+    def write_value(self, file_name, value):
         base_path = os.path.dirname(os.getcwd())
         file_path = base_path + '\\config\\' + file_name
         with open(file_path, 'w') as file:
-            file.write(json.dumps(data))
+            file.write(json.dumps(value))
 
 if __name__ == '__main__':
     data = {

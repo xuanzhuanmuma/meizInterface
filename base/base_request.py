@@ -8,30 +8,41 @@
 import requests
 
 from util.handle_ini import HandleIni
+from util.handle_cookie import HandleCookie
 
 
 class BaseRequest(object):
-    def send_post(self, url, data):
+    def send_post(self, url, data, headers=None, cookie=None, get_cookie=None):
         '''发送post请求'''
-        headers = {'token': '12345hzzxkj67890'}
-        res = requests.post(url=url, data=data, headers=headers)
+        response = requests.post(url=url, data=data, headers=headers, cookies=cookie)
+        if get_cookie is not None:
+            cookie_value_jar = response.cookies
+            cookie_value = requests.utils.dict_from_cookiejar(cookie_value_jar)
+            # 是app或者web
+            HandleCookie().write_cookie(cookie_value, get_cookie['is_cookie'])
+        res = response
         return res
 
-    def send_get(self, url, data):
+    def send_get(self, url, data, headers=None, cookie=None, get_cookie=None):
         '''发送get请求'''
-        headers = {'token': '12345hzzxkj67890'}
-        res = requests.get(url=url, params=data, headers=headers)
+        response = requests.get(url=url, params=data, headers=headers, cookies=cookie)
+        if get_cookie is not None:
+            cookie_value_jar = response.cookies
+            cookie_value = requests.utils.dict_from_cookiejar(cookie_value_jar)
+            # 是app或者web
+            HandleCookie().write_cookie(cookie_value, get_cookie['is_cookie'])
+        res = response
         return res
 
-    def run_main(self, method, url, data):
+    def run_main(self, method, url, data, headers=None, cookie=None, get_cookie=None):
         '''执行方法，传递method, url, data参数'''
         base_url = HandleIni().get_value('server', 'host')
         if 'http' not in url or 'https' not in url:
             url = base_url + url
         if method == 'get':
-            res = self.send_get(url, data)
+            res = self.send_get(url, data, headers, cookie, get_cookie)
         else:
-            res = self.send_post(url, data)
+            res = self.send_post(url, data, headers, cookie, get_cookie)
         return res
 
     def get_text(self, res):

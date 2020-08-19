@@ -5,12 +5,11 @@
 @file: handle_cookie.py
 @time: 2020/8/17 16:42
 """
-import os
-import configparser
-import json
 import time
 
 from util.handle_json import HandleJson
+
+
 # {
 #   "app_cookie": {
 #      "appid": "aaaa"
