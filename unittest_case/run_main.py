@@ -19,6 +19,7 @@
 import requests
 from deepdiff import DeepDiff
 import json
+import time
 
 from util.handle_excel import excel_data
 from base.base_request import request
@@ -37,19 +38,23 @@ class RunMain(object):
             cookie = None
             get_cookie = None
             headers = None
+            depend_result = None
             # openpyxl行和类分别从1开始
             data = excel_data.get_row_values(i + 2)
             is_run = data[2]
             if is_run == 'yes':
-                cookie_method = data[7]  # cookie操作
-                is_header = data[8]  # header操作
-                except_type = data[9]  # 预期结果方式
-                except_result = data[10]  # 预期结果
-                condition = data[3]  # 前置条件
-                if condition is not None:
-                    condition_data = ConditionData().depend_data(condition, len(data))
-                    print(len(data))
-                    print(condition_data)
+                is_depend = data[3]  # 前置条件(包括caseid和规则，如1>code)
+                if is_depend is not None:
+                    '''获取依赖数据'''
+                    depend_result = ConditionData().get_data(is_depend, len(data))
+                    print('===========', depend_result)
+                    '''替换当前数据行中的数据为依赖数据'''
+                    depend_key = data[4]
+                    json.loads(data[7])[depend_key] = depend_result
+                cookie_method = data[8]  # cookie操作
+                is_header = data[9]  # header操作
+                except_type = data[10]  # 预期结果方式
+                except_result = data[11]  # 预期结果
                 if cookie_method == 'yes':
                     cookie = HandleCookie().get_cookie_value('app')
                 if is_header:
@@ -57,20 +62,20 @@ class RunMain(object):
                 if cookie_method == 'write':
                     '''必须是获取到cookie'''
                     get_cookie = {'is_cookie': 'app'}
-                res = request.run_main(method=data[4], url=data[5], data=data[6], headers=headers, cookie=cookie, get_cookie=get_cookie)
+                res = request.run_main(method=data[5], url=data[6], data=data[7], headers=headers, cookie=cookie, get_cookie=get_cookie)
                 if request.get_respose_code(res) == requests.codes.ok:
                     json_data = request.get_json_(res)
                     # 实际code和message
                     code = str(json_data['code'])
                     message = json_data['msg']
                     if except_type == 'code_message':
-                        config_message = self.get_message_with_code(data[5], code)
+                        config_message = self.get_message_with_code(data[6], code)
                         if message == config_message:
-                            excel_data.excel_write_data(i + 2, 12, '成功')
+                            excel_data.excel_write_data(i + 2, 13, '成功')
                             print('测试通过')
                         else:
-                            excel_data.excel_write_data(i + 2, 12, '失败')
-                            excel_data.excel_write_data(i + 2, 13, json.dumps(json_data))
+                            excel_data.excel_write_data(i + 2, 13, '失败')
+                            excel_data.excel_write_data(i + 2, 14, json.dumps(json_data))
                             print('测试失败')
                     if except_type == 'code':
                         if except_result == code:

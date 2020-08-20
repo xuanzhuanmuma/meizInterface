@@ -4,6 +4,7 @@
 '''前置条件判断'''
 from util.handle_excel import HandleExcel
 from jsonpath_rw import parse
+import json
 
 class ConditionData(object):
     def split_data(self, data):
@@ -21,16 +22,31 @@ class ConditionData(object):
         value = handle_excel.get_cell_value(row_num, index)
         return value
 
-    def get_depend_data(self, data, index):
-        result_data = self.depend_data(data, index)
-        matching_rule = self.split_data(data)[1]
-        # data.banner.id
+    def get_depend_data(self, result_data, matching_rule):
+        '''获取依赖字段'''
         json_exe = parse(matching_rule)
-        print(result_data, '============', json_exe)
         madle = json_exe.find(result_data)
-        print('------------', madle)
-        for math in madle:
-            print(math.value)
+        print( '返回结果：', result_data)
+        print('匹配条件：', matching_rule)
+        return [math.value for math in madle]
+
+    def get_data(self, data, index):
+        # data.bizId
+        # result_data = {
+        # "code": 200,
+        # "msg": "success",
+        # "data": {
+        #             "bizId": "28ed792b15be407a9fef260fb57e437f",
+        #             "procInsId": "8e794944d85445859271ae92f40c6701",
+        #             "nodeId": "7393db094e5c48fb8823f4a1875438d7",
+        #             "workId": "1b4d9a1df3024971b805a1a6bcb50946"
+        #      }
+        # }
+        # matching_rule = 'data.bizId'
+        # result_data = eval(self.depend_data(data, index))
+        result_data = json.loads(self.depend_data(data, index))
+        matching_rule = self.split_data(data)[1]
+        return self.get_depend_data(result_data, matching_rule)
 
 '''
 def get_row_num(key, id):
@@ -44,8 +60,7 @@ def get_row_num(key, id):
 '''
 
 if __name__ == '__main__':
-    # print(ConditionData().depend_data('1 > data.banner.id', 13))
-    ConditionData().get_depend_data('1 > code', 13)
+    print(ConditionData().get_data("1 > code", 14))
 
 
 
