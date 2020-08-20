@@ -51,18 +51,21 @@ class RunMain(object):
                     '''替换当前数据行中的数据为依赖数据'''
                     depend_key = data[4]
                     json.loads(data[7])[depend_key] = depend_result
+                method = data[5]
+                url = data[6]
+                request_data = data[7]
                 cookie_method = data[8]  # cookie操作
                 is_header = data[9]  # header操作
                 except_type = data[10]  # 预期结果方式
                 except_result = data[11]  # 预期结果
                 if cookie_method == 'yes':
                     cookie = HandleCookie().get_cookie_value('app')
-                if is_header:
-                    headers = HandleHeader().get_header()
                 if cookie_method == 'write':
                     '''必须是获取到cookie'''
                     get_cookie = {'is_cookie': 'app'}
-                res = request.run_main(method=data[5], url=data[6], data=data[7], headers=headers, cookie=cookie, get_cookie=get_cookie)
+                if is_header == 'yes':
+                    headers = HandleHeader().get_header()
+                res = request.run_main(method, url, request_data, headers=headers, cookie=cookie, get_cookie=get_cookie)
                 if request.get_respose_code(res) == requests.codes.ok:
                     json_data = request.get_json_(res)
                     # 实际code和message
@@ -93,7 +96,7 @@ class RunMain(object):
                             status_str = 'success'
                         else:
                             status_str = 'error'
-                        except_result_json = self.get_json_result(data[5], status_str)
+                        except_result_json = self.get_json_result(url, status_str)
                         result = self.handle_result_json(res, except_result_json)
                         if result:
                             print('测试通过')

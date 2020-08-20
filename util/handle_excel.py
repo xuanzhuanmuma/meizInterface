@@ -79,6 +79,14 @@ class HandleExcel(object):
             num = num + 1
         return num
 
+    def get_excel_data(self):
+        '''获取Excel中所有数据'''
+        data_list = []
+        rows = self.get_rows()
+        for i in range(1, rows):
+            data_list.append(self.get_row_values(i + 1))
+        return data_list
+
 '''单例'''
 excel_data = HandleExcel()
 
