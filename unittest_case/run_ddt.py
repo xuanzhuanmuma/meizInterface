@@ -5,20 +5,23 @@
 @file: run_ddt.py
 @time: 2020/8/20 17:20
 """
-import requests
-from deepdiff import DeepDiff
+import HTMLTestRunner
 import json
+import os
 import time
 import unittest
-import ddt
 
-from util.handle_excel import excel_data
+import ddt
+import requests
+
 from base.base_request import request
+from util.condition_data import ConditionData
+from util.handle_cookie import HandleCookie
+from util.handle_excel import excel_data
 from util.handle_ini import HandleIni
 from util.handle_json import HandleJson
-from util.handle_cookie import HandleCookie
 from util.handler_header import HandleHeader
-from util.condition_data import ConditionData
+
 base_url = HandleIni().get_value('server', 'host')
 all_data = excel_data.get_excel_data()
 
@@ -57,47 +60,71 @@ class TestRunCaseDdt(unittest.TestCase):
                 get_cookie = {'is_cookie': 'app'}
             if is_header == 'yes':
                 headers = HandleHeader().get_header()
-            res = request.run_main(method, url, request_data, headers=headers, cookie=cookie, get_cookie=get_cookie)
-            if request.get_respose_code(res) == requests.codes.ok:
-                json_data = request.get_json_(res)
-                # 实际code和message,跟需求写以下条件
-                code = str(json_data['code'])
-                message = json_data['msg']
-                if except_type == 'code_message':
-                    config_message = self.get_message_with_code(url, code)
-                    if message == config_message:
-                        excel_data.excel_write_data(line_num, 13, '成功')
-                        print('测试通过')
-                    else:
-                        excel_data.excel_write_data(line_num, 13, '失败')
-                        excel_data.excel_write_data(line_num, 14, json.dumps(json_data))
-                        print('测试失败')
-                if except_type == 'code':
-                    # if except_result == code:
-                    #     print('测试通过')
-                    # else:
-                    #     print('测试失败')
-                    self.assertEqual(except_result, code)
-                if except_type == 'message':
-                    # if except_result == message:
-                    #     print('测试通过')
-                    # else:
-                    #     print('测试失败')
-                    self.assertEqual(except_result, message)
-                if except_result == 'json':
-                    # 项目中判断两个json发生变化，前提安装pip install deepdiff
-                    if code == 1000:
-                        status_str = 'success'
-                    else:
-                        status_str = 'error'
-                    except_result_json = self.get_json_result(url, status_str)
-                    result = self.handle_result_json(res, except_result_json)
-                    if result:
-                        print('测试通过')
-                    else:
-                        print('测试失败')
-            else:
-                print('服务器有误')
+            try:
+                res = request.run_main(method, url, request_data, headers=headers, cookie=cookie, get_cookie=get_cookie)
+                if request.get_respose_code(res) == requests.codes.ok:
+                    json_data = request.get_json_(res)
+                    # 实际code和message,跟需求写以下条件
+                    code = str(json_data['code'])
+                    message = json_data['msg']
+                    if except_type == 'code_message':
+                        config_message = self.get_message_with_code(url, code)
+                        if message == config_message:
+                            excel_data.excel_write_data(line_num, 13, '成功')
+                            excel_data.excel_write_data(line_num, 14, json.dumps(res))
+                            print('测试通过')
+                        else:
+                            excel_data.excel_write_data(line_num, 13, '失败')
+                            excel_data.excel_write_data(line_num, 14, json.dumps(json_data))
+                            print('测试失败')
+                    if except_type == 'code':
+                        # if except_result == code:
+                        #     print('测试通过')
+                        # else:
+                        #     print('测试失败')
+                        try:
+                            self.assertEqual(except_result, code)
+                            excel_data.excel_write_data(line_num, 13, '成功')
+                            excel_data.excel_write_data(line_num, 14, json.dumps(res))
+                        except Exception as e:
+                            excel_data.excel_write_data(line_num, 13, '失败')
+                            raise e
+                    if except_type == 'message':
+                        # if except_result == message:
+                        #     print('测试通过')
+                        # else:
+                        #     print('测试失败')
+                        try:
+                            self.assertEqual(except_result, message)
+                            excel_data.excel_write_data(line_num, 13, '成功')
+                            excel_data.excel_write_data(line_num, 14, json.dumps(res))
+                        except Exception as e:
+                            excel_data.excel_write_data(line_num, 13, '失败')
+                            raise e
+                    if except_result == 'json':
+                        # 项目中判断两个json发生变化，前提安装pip install deepdiff
+                        if code == 1000:
+                            status_str = 'success'
+                        else:
+                            status_str = 'error'
+                        except_result_json = self.get_json_result(url, status_str)
+                        result = self.handle_result_json(res, except_result_json)
+                        # if result:
+                        #     print('测试通过')
+                        # else:
+                        #     print('测试失败')
+                        try:
+                            self.assertTrue(result)
+                            excel_data.excel_write_data(line_num, 13, '成功')
+                            excel_data.excel_write_data(line_num, 14, json.dumps(res))
+                        except Exception as e:
+                            excel_data.excel_write_data(line_num, 13, '失败')
+                            raise e
+                else:
+                    print('服务器有误')
+            except Exception as e:
+                excel_data.excel_write_data(line_num, 13, '失败')
+                raise e
 
     def get_json_result(self, url, status):
         data = self.get_json_value(url)
@@ -121,5 +148,21 @@ class TestRunCaseDdt(unittest.TestCase):
                     return message
         return None
 
+def get_time():
+    '''返回当前时间格式化信息'''
+    now = time.strftime('%Y-%m-%d %H-%M-%S')
+    return now
+
 if __name__ == '__main__':
-    unittest.main()
+    # unittest.main()
+    suite = unittest.defaultTestLoader.discover(
+        start_dir=os.path.dirname(__file__),  # 执行测试用例的目录，当前类和执行测试用例在同目录
+        pattern='run_ddt.py',  # 这个是匹配脚本名称的规则
+        top_level_dir=None)  # 这个是顶层目录的名称，一般默认等于None就行了
+    report_path = os.path.join(os.path.dirname(os.getcwd()), 'report', get_time() + '_result.html')
+    with open(report_path, 'wb') as file:
+        runner = HTMLTestRunner.HTMLTestRunner(
+            stream=file,
+            title='自动化测试报告',
+            description='自动化测试报告详细信息')
+        runner.run(suite)
