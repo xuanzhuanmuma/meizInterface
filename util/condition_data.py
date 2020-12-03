@@ -26,7 +26,7 @@ class ConditionData(object):
         '''获取依赖字段'''
         json_exe = parse(matching_rule)
         madle = json_exe.find(result_data)
-        print( '返回结果：', result_data)
+        print('返回结果：', result_data)
         print('匹配条件：', matching_rule)
         return [math.value for math in madle]
 
